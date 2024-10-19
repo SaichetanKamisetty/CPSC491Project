@@ -3,9 +3,6 @@ __pycache__/
 *$py.class
 .env
 node_modules/
-*.css
-*.min.css
-*.map
 *.log
 venv/
 env/
