@@ -1,0 +1,17 @@
+__pycache__/
+*.py[cod]
+*$py.class
+.env
+node_modules/
+*.css
+*.min.css
+*.map
+*.log
+venv/
+env/
+*.db
+*.sqlite3
+.vscode/
+static/
+.DS_Store
+Thumbs.db
