@@ -1,18 +1,26 @@
-from flask import Flask, render_template, request, jsonify, url_for, g
+from flask import Flask, render_template, request, jsonify, url_for, session
 import os
 from werkzeug.utils import secure_filename
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), 'models'))
+from flask_session import Session
+
+from Controller import TranslateManga
 
 from roboflow import Roboflow
-# rf = Roboflow(api_key="")
-# project = rf.workspace().project("segmetn")
-# model = project.version(3).model
+rf = Roboflow(api_key="")
+project = rf.workspace().project("segmetn")
+model = project.version(3).model
 from manga_ocr import MangaOcr 
 
-# ocr = MangaOcr()
+ocr = MangaOcr()
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'app/static/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+app.config['SESSION_TYPE'] = 'filesystem'
+Session(app)
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -51,7 +59,7 @@ def delete_file():
     if file_path:
         full_path = os.path.join('app/', file_path.lstrip('/'))
 
-        if os.path.exists(os.path.join(os.getcwd(), full_path)):
+        if os.path.exists(os.path.join(os.getcwd(), full_path)) and not session.get('currentlyTranslating', False):
             os.remove(os.path.join(os.getcwd(), full_path))
             return jsonify({'success': True, 'message':'File deleted'}), 200
         else:
@@ -59,6 +67,27 @@ def delete_file():
         
     return jsonify({'success': False, 'message': 'File path not provided.'}), 400
 
+@app.route('/translate', methods=['POST'])
+def translate_request():
+    if session.get('currentlyTranslating', False):
+        return jsonify({'success': False, 'message': 'Translation already in progress'}), 400
+    
+    session['currentlyTranslating'] = True
+    try: 
+        translator = TranslateManga(model=model, file_loc=UPLOAD_FOLDER, ocr=ocr)
+        res = translator.TranslateManga()
+
+        if res == 1:
+            file_urls = []
+            for filename in os.listdir(UPLOAD_FOLDER):
+                file_url = url_for('static', filename=f'uploads/{filename}')
+                file_urls.append(file_url)
+
+            return jsonify({'success': True, 'message': 'Translated Manga', 'fileUrls': file_urls}), 200
+        else:
+            return jsonify({'success': False, 'message': 'Something went wrong'}), 400
+    finally:
+        session['currentlyTranslating'] = False
 
 app.run(debug=True)
 

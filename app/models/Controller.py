@@ -1,29 +1,29 @@
 from Model import DetectBubbles, DetectText, RemoveText, TranslateText, ProcessOutput
 
-
-from roboflow import Roboflow
-rf = Roboflow(api_key="")
-project = rf.workspace().project("segmetn")
-model = project.version(3).model
-from manga_ocr import MangaOcr 
-
-ocr = MangaOcr()
-
-class TranslateWebtoons():
-    def __init__(self, file_loc): 
+class TranslateManga():
+    def __init__(self, file_loc, model, ocr): 
         self.file_loc = file_loc
+        self.model = model
+        self.ocr = ocr
 
-    def TranslateWebtoon(self):
-        speechBubbles = DetectBubbles(roboflowModel=model, directory=self.file_loc).DetectBubble()
-        detectedText = DetectText(predictions=speechBubbles, mangaOCR=ocr).DetectText()
-        # for i in detectedText.keys():
-        #     for j in range(len(detectedText[i])):
-        #         print(detectedText[i][j]['text'])
-        RemoveText(directory=self.file_loc, predictions=speechBubbles).RemoveText()
+    def TranslateManga(self):
+        try:
+            speechBubbles = DetectBubbles(roboflowModel=self.model, directory=self.file_loc).DetectBubble()
+            # detectedText = DetectText(predictions=speechBubbles, mangaOCR=self.ocr).DetectText() # Implement later
+            # for i in detectedText.keys():
+            #     for j in range(len(detectedText[i])):
+            #         print(detectedText[i][j]['text'])
+            RemoveText(directory=self.file_loc, predictions=speechBubbles).RemoveText()
+            
+        except Exception as err:
+            print(err)
+            return 0
+        
+        return 1
         # TranslateText()
         # ProcessOutput()
 
 
-translator = TranslateWebtoons(r"C:\Users\cheta\OneDrive\Desktop\CPSC491Project\app\static\uploads")
+# translator = TranslateManga(r"C:\Users\cheta\OneDrive\Desktop\CPSC491Project\app\static\uploads")
 
-translator.TranslateWebtoon()
+# translator.TranslateWebtoon()

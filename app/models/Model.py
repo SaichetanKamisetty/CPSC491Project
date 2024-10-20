@@ -79,10 +79,9 @@ class RemoveText:
                 inpainted_image = cv2.inpaint(image_, mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
                 image_ = inpainted_image
 
-            inpainted_image_path = os.path.join(self.directory, f'{page}')
-            print(inpainted_image_path)
+            print(page)
             image = Image.fromarray(cv2.cvtColor(inpainted_image, cv2.COLOR_BGR2RGB))
-            image.save(inpainted_image_path)
+            image.save(page)
 
 class TranslateText:
     def __init__():

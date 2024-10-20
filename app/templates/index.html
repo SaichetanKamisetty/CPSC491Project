@@ -36,7 +36,7 @@
                 </div>
 
                 <div class="md:w-1/2 pt-10 bg-center mx-auto flex justify-center items-center">
-                    <button class="bg-white hover:bg-gray-300 text-gray-800 font-semibold py-2 px-12 border border-gray-400 rounded shadow">
+                    <button class="bg-white hover:bg-gray-300 text-gray-800 font-semibold py-2 px-12 border border-gray-400 rounded shadow" onclick="translateManga()">
                         Translate
                     </button>
                 </div>
@@ -86,4 +86,5 @@
     </div>
 </body>
 <script src="{{url_for('static', filename='js/handleUpload.js')}}"></script>
+<script src="{{url_for('static', filename='js/startTranslation.js')}}"></script>
 </html>
