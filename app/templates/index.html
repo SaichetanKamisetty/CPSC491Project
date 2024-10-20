@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="/static/css/main.css">
+    <title>Document</title>
+</head>
+<body class="min-h-screen bg-gray-800">
+    <div class="flex w-full h-screen p-4 ">
+        <!-- Left container-->
+        <div class="bg-gray-800 rounded-lg w-[35%] h-full p-0.5 bg-gradient-to-b overflow-auto from-blue-200 to-purple-400">
+            <div class="bg-gray-800 rounded-lg w-full h-full overflow-auto">
+                <p class="text-center text-5xl text-white font-bold pt-4">WebTranslate</p>
+                
+                <div class="md:w-2/3 pt-40">
+                    <label class="block text-white font-bold pl-4 text-lg" for="chatGPT-key">
+                        OpenAI API Key:
+                    </label>
+                </div>
+                <div class="md:w-full pt-4 pl-4 pr-4">
+                    <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="chatGPT-key" type="password">
+                </div>
+
+                <div class="md:w-2/3 pt-10">
+                    <label class="block text-white font-bold pl-4 text-lg" for="textsize">
+                        Font Size:
+                    </label>
+                </div>
+                <div class="md:w-full pt-4 pl-4 pr-4">
+                    <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="textsize" type="number">
+                </div>
+
+                <div class="md:w-full pt-10 bg-center mx-auto">
+                    <label class="block text-red-700 font-bold text-xl text-center" id="error_toast"></label>
+                </div>
+
+                <div class="md:w-1/2 pt-10 bg-center mx-auto flex justify-center items-center">
+                    <button class="bg-white hover:bg-gray-300 text-gray-800 font-semibold py-2 px-12 border border-gray-400 rounded shadow">
+                        Translate
+                    </button>
+                </div>
+
+                <div class="md:w-full pt-60 bg-center mx-auto">
+                    <label class="block text-white font-bold text-xl text-center" id="translation_process">
+                        [PROGRESS]: Waiting for Translation Request.
+                    </label>
+                </div>
+            </div>
+        </div>
+        <!-- Right container-->
+        <div class="bg-gray-900 rounded-lg w-[65%] h-full ml-6 p-0.5 overflow-auto bg-gradient-to-b from-blue-200 to-purple-400">
+            <div class="bg-gray-800 rounded-lg w-full h-full overflow-auto">
+                <div id="instructions">
+                    <div class="w-[70%] h-[30%] bg-center mx-auto bg-gray-900 rounded-lg mt-20">
+                        <label class="block text-white font-bold text-2xl text-center">
+                            Upload your file: To begin translation, upload your Manga documents in a folder.<br><br><br>
+                            <br>TIP: Make sure all your pages are in PNG/JPG format for best results.
+                        </label>
+                    </div>
+                    
+                
+                    <div class="flex items-center justify-center w-full pr-40 pl-40 pt-20">
+                        <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-64 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-gray-800 dark:bg-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:hover:border-gray-500">
+                            <div class="flex flex-col items-center justify-center pt-5 pb-6">
+                                <svg class="w-8 h-8 mb-4 text-gray-500 dark:text-gray-400" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 20 16">
+                                    <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/>
+                                </svg>
+                                <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                                <p class="text-xs text-gray-500 dark:text-gray-400">Folders</p>
+                            </div>
+                            <input id="dropzone-file" type="file" class="hidden" multiple webkitdirectory onchange="handleUploads(this.files)"/>
+                        </label>
+                    </div> 
+                </div>
+                <div class="flex flex-col space-y-2 p-6 hidden" id="image-container">
+                    <div class="relative">
+                        <img src="../static/images/test2.jpg" alt="Manga 1" class="w-full rounded-lg">
+                        <button class="absolute top-2 right-2 bg-red-500 text-white rounded-full w-8 h-8 flex items-center justify-center hover:bg-red-600 focus:outline-none">
+                            x
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+<script src="{{url_for('static', filename='js/handleUpload.js')}}"></script>
+</html>
