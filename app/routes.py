@@ -17,9 +17,7 @@ is_translating = False
 ocr = MangaOcr()
 app = Flask(__name__)
 
-BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_FOLDER = os.path.join(BASE_DIR, 'static', 'uploads')
-
+UPLOAD_FOLDER = '../static/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 if not os.path.exists(UPLOAD_FOLDER):
@@ -57,7 +55,7 @@ def delete_file():
     file_path = data.get('file_path', None)
 
     if file_path:
-        full_path = os.path.join(BASE_DIR, file_path.lstrip('/'))
+        full_path = os.path.join('app/', file_path.lstrip('/'))
         if os.path.exists(os.path.join(os.getcwd(), full_path)) and not is_translating:
             os.remove(os.path.join(os.getcwd(), full_path))
             return jsonify({'success': True, 'message':'File deleted'}), 200
