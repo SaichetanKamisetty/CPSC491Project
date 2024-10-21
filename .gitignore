@@ -14,4 +14,3 @@ Thumbs.db
 uploads/*
 !uploads/
 flask_session/
-TestImages/
