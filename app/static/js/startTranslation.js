@@ -10,7 +10,8 @@ function translateManga()
     {
         fetch("/translate", {
             method: "POST",
-            cache: 'no-cache'
+            cache: 'no-cache',
+            credentials: 'include',
         })
         .then(response => response.json())
         .then(data=>{

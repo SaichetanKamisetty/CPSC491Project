@@ -69,6 +69,11 @@ class RemoveText:
         for page in self.predictions.keys():
             image_ = cv2.imread(page)
 
+            boundary_check = self.predictions[page]['predictions']
+
+            if not boundary_check:
+                inpainted_image = image_
+
             for prediction in self.predictions[page]['predictions']:
                 points = prediction['points']
                 polygon = [(point['x'], point['y']) for point in points]

@@ -4,6 +4,8 @@ function handleUploads(directory)
     const imageContainer = document.getElementById('image-container');
     const formData = new FormData();
 
+    console.log(directory.length);
+
     if (directory.length > 0)
     {
         for(let i = 0; i<directory.length; i++)
@@ -47,7 +49,8 @@ function removeImage(fileUrl, button)
         headers: {
             'Content-Type': 'application/json',
         },
-        body: JSON.stringify({file_path: fileUrl})
+        body: JSON.stringify({file_path: fileUrl}),
+        credentials: 'include'
     })
     .then(response=>response.json())
     .then(data=> {
@@ -61,7 +64,9 @@ function removeImage(fileUrl, button)
         const instruc = document.getElementById('instructions');
         if (imageContainer.children.length < 1) {
             imageContainer.classList.add('hidden');
-            instruc.style.display = 'initial';
+            instruc.style.display = '';
+
+            location.reload();
         }
     })
     .catch(error => console.error('Error sending delete request: ', error))

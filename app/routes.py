@@ -3,7 +3,6 @@ import os
 from werkzeug.utils import secure_filename
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'models'))
-from flask_session import Session
 
 from Controller import TranslateManga
 
@@ -13,14 +12,13 @@ project = rf.workspace().project("segmetn")
 model = project.version(3).model
 from manga_ocr import MangaOcr 
 
+is_translating = False
+
 ocr = MangaOcr()
 app = Flask(__name__)
 
 UPLOAD_FOLDER = 'app/static/uploads/'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-
-app.config['SESSION_TYPE'] = 'filesystem'
-Session(app)
 
 if not os.path.exists(UPLOAD_FOLDER):
     os.makedirs(UPLOAD_FOLDER)
@@ -58,21 +56,22 @@ def delete_file():
 
     if file_path:
         full_path = os.path.join('app/', file_path.lstrip('/'))
-
-        if os.path.exists(os.path.join(os.getcwd(), full_path)) and not session.get('currentlyTranslating', False):
+        if os.path.exists(os.path.join(os.getcwd(), full_path)) and not is_translating:
             os.remove(os.path.join(os.getcwd(), full_path))
             return jsonify({'success': True, 'message':'File deleted'}), 200
         else:
-            return jsonify({'success': True, 'message':'File not found/error'}), 400
+            return jsonify({'success': False, 'message':'File not found/error'}), 400
         
     return jsonify({'success': False, 'message': 'File path not provided.'}), 400
 
+
 @app.route('/translate', methods=['POST'])
 def translate_request():
-    if session.get('currentlyTranslating', False):
+    global is_translating
+    if is_translating:
         return jsonify({'success': False, 'message': 'Translation already in progress'}), 400
-    
-    session['currentlyTranslating'] = True
+
+    is_translating = True
     try: 
         translator = TranslateManga(model=model, file_loc=UPLOAD_FOLDER, ocr=ocr)
         res = translator.TranslateManga()
@@ -87,7 +86,7 @@ def translate_request():
         else:
             return jsonify({'success': False, 'message': 'Something went wrong'}), 400
     finally:
-        session['currentlyTranslating'] = False
+        is_translating = False
 
 app.run(debug=True)
 
