@@ -1,9 +1,10 @@
 function translateManga()
 {
     const instruc = document.getElementById('instructions');
-    const imageContainer = document.getElementById('image-container');
     const gptInput = document.getElementById('chatGPT-key');
     const textSize = document.getElementById('textsize');
+
+    const imageContainer = document.getElementById('image-container');
 
     if (!imageContainer.classList.contains('hidden'))
     {
@@ -16,8 +17,6 @@ function translateManga()
             if (data.success) {
                 const imageContainer = document.getElementById('image-container');
                 imageContainer.innerHTML = '';
-
-                console.log("hello?");
 
                 data.fileUrls.forEach(elem => {
                     const timestamp = new Date().getTime();

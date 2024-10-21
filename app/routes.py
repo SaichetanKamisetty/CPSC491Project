@@ -8,7 +8,7 @@ from flask_session import Session
 from Controller import TranslateManga
 
 from roboflow import Roboflow
-rf = Roboflow(api_key="")
+rf = Roboflow(api_key="7A5IiBW9Guks4dJnTRg7")
 project = rf.workspace().project("segmetn")
 model = project.version(3).model
 from manga_ocr import MangaOcr 

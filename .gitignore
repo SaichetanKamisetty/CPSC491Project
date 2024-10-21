@@ -13,3 +13,4 @@ env/
 Thumbs.db
 uploads/*
 !uploads/
+flask_session/
