@@ -37,12 +37,67 @@ function translateManga()
             }
             else {
                 console.log("error");
+                showError(showError(`ERROR | ${data.message}`)
+            )
             }
         })
-        .catch(error=>console.error("Error with translation of files:", error));
+        .catch(error=> {
+            console.error("Error with sending translation request of files:", error)
+            showError(`ERROR | Error with sending translation request of files: ${error.message || error}`)
+        });
     } 
     else
     {
+        showError("ERROR | You did not upload any images! Please upload some and try again.")
         return;
     }
 }
+
+function showError(msg, duration = 3000) {
+    const errorToast = document.getElementById("error_toast");
+
+    errorToast.textContent = msg;
+    errorToast.style.display = "block";
+
+    setTimeout(() => {
+        errorToast.textContent = "";
+    }, duration);
+}
+
+const eventSource = new EventSource('/translation-progress');
+
+eventSource.onmessage = function(event) {
+    const data = JSON.parse(event.data);
+    const translation_process = document.getElementById('translation_process');
+
+    switch(data.status) {
+        case 'waiting':
+            // No translation in progress
+            translation_process.textContent = "[PROGRESS]: Waiting for Translation Request."
+            break;
+        case 'bubbles':
+            // Translation just started
+            translation_process.textContent = "[PROGRESS]: Detecting text bubbles for all images."
+            break;
+        case 'text':
+            // Update progress bar
+            translation_process.textContent = "[PROGRESS]: Extracting text from images."
+            break;
+        case 'cleaning':
+            // Update progress bar
+            translation_process.textContent = "[PROGRESS]: Cleaning text from images."
+            break;
+        case 'translate':
+            // Translation finished successfully
+            translation_process.textContent = "[PROGRESS]: Translating text via OpenAI."
+            break;
+        case 'processing':
+            // Translation finished successfully
+            translation_process.textContent = "[PROGRESS]: Adding text back to all images."
+            break;
+        case 'complete':
+            // Translation finished successfully
+            translation_process.textContent = "[PROGRESS]: Translation done. Ready to download."
+            break;
+    }
+};

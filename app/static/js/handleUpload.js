@@ -38,7 +38,10 @@ function handleUploads(directory)
                 imageContainer.appendChild(imgDiv);
             });
         })
-        .catch(error=>console.error("Error uploading files:", error));
+        .catch(error=> {
+            console.error("Error uploading files:", error),
+            showError(`ERROR | Issue uploading files: ${error.message || error}`)
+        });
     }
 }
 
@@ -58,6 +61,7 @@ function removeImage(fileUrl, button)
             button.parentElement.remove();
         } else {
             console.error("Error deleting file:", data.message);
+            showError(`ERROR | Error deleting file: ${data.message}`)
         }
 
         const imageContainer = document.getElementById('image-container');
@@ -69,5 +73,20 @@ function removeImage(fileUrl, button)
             location.reload();
         }
     })
-    .catch(error => console.error('Error sending delete request: ', error))
+    .catch(error=> {
+        console.error("Error sending delete request: ", error),
+        showError(`ERROR | Error sending delete request: ${error.message || error}`)
+    });
+}
+
+
+function showError(msg, duration = 3000) {
+    const errorToast = document.getElementById("error_toast");
+
+    errorToast.textContent = msg;
+    errorToast.style.display = "block";
+
+    setTimeout(() => {
+        errorToast.textContent = "";
+    }, duration);
 }

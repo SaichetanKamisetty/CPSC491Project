@@ -1,8 +1,10 @@
-from flask import Flask, render_template, request, jsonify, url_for, session
+from flask import Flask, render_template, request, jsonify, url_for, session, Response, stream_with_context
 import os
 from werkzeug.utils import secure_filename
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'models'))
+import time
+import json
 
 from Controller import TranslateManga
 
@@ -28,6 +30,20 @@ if not os.path.exists(UPLOAD_FOLDER):
 @app.route("/")
 def main_page():
     return render_template("index.html")
+
+@app.route('/translation-progress')
+def translation_progress():
+    def generate():
+        while True:
+            if not hasattr(app, 'translation_status'):
+                data = 'data: {"status": "waiting"}\n\n'
+            else:
+                data = f'data: {json.dumps(app.translation_status)}\n\n'
+            yield data
+            time.sleep(1)  # Prevent overwhelming the client
+            
+    return Response(stream_with_context(generate()), 
+                   mimetype='text/event-stream')
 
 @app.route('/upload', methods=['POST'])
 def uploadFiles():
@@ -75,10 +91,15 @@ def translate_request():
 
     is_translating = True
     try: 
-        translator = TranslateManga(model=model, file_loc=UPLOAD_FOLDER, ocr=ocr)
+        app.translation_status = {"status": "started"}
+        def progress_callback(status):
+            app.translation_status = {
+                "status": status,
+            }
+        translator = TranslateManga(model=model, file_loc=UPLOAD_FOLDER, ocr=ocr, progress_callback=progress_callback)
         res = translator.TranslateManga()
 
-        if res == 1:
+        if res[0] == 1:
             file_urls = []
             for filename in os.listdir(UPLOAD_FOLDER):
                 file_url = url_for('static', filename=f'uploads/{filename}')
@@ -86,8 +107,13 @@ def translate_request():
 
             return jsonify({'success': True, 'message': 'Translated Manga', 'fileUrls': file_urls}), 200
         else:
-            return jsonify({'success': False, 'message': 'Something went wrong'}), 400
+            app.translation_status = {"status": "waiting"}
+            return jsonify({'success': False, 'message': f'Issue processing images: {res[1]}'}), 400
+    except Exception as e:
+        app.translation_status = {"status": "waiting"}
+        return jsonify({'success': False, 'message': f'Something went wrong: {e}'}), 400
     finally:
+        app.translation_status = {"status": "waiting"}
         is_translating = False
 
 app.run(debug=True)
