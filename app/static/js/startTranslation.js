@@ -1,16 +1,43 @@
 function translateManga()
 {
-    const instruc = document.getElementById('instructions');
     const gptInput = document.getElementById('chatGPT-key');
     const textSize = document.getElementById('textsize');
+    const checkbox = document.getElementById('empty-textboxes');
+    const formData = new FormData(); 
 
     const imageContainer = document.getElementById('image-container');
 
     if (!imageContainer.classList.contains('hidden'))
     {
+        let apiKey = "";
+        let textSize_ = 100;
+        let checkbox_ = false;
+
+        if (!gptInput.value)
+        {
+            showError(`ERROR | Input ChatGPT key`)
+            return
+        }
+        if (textSize.value)
+        {
+            if (textSize.value <= 0 || textSize.value > 100)
+            {
+                showError(`ERROR | Input valid text size values 1-100`)
+                return
+            }
+            textSize_ = textSize.value
+        }
+        apiKey = gptInput.value
+        checkbox_ = checkbox.checked
+        formData.append('gptInput', apiKey)
+        formData.append('textSize', textSize_)
+        formData.append('checkbox', checkbox_)
+
+        
         fetch("/translate", {
             method: "POST",
             cache: 'no-cache',
+            body: formData,
             credentials: 'include',
         })
         .then(response => response.json())
@@ -37,8 +64,7 @@ function translateManga()
             }
             else {
                 console.log("error");
-                showError(showError(`ERROR | ${data.message}`)
-            )
+                showError(`ERROR | ${data.message}`)
             }
         })
         .catch(error=> {
@@ -72,31 +98,24 @@ eventSource.onmessage = function(event) {
 
     switch(data.status) {
         case 'waiting':
-            // No translation in progress
             translation_process.textContent = "[PROGRESS]: Waiting for Translation Request."
             break;
         case 'bubbles':
-            // Translation just started
             translation_process.textContent = "[PROGRESS]: Detecting text bubbles for all images."
             break;
         case 'text':
-            // Update progress bar
             translation_process.textContent = "[PROGRESS]: Extracting text from images."
             break;
         case 'cleaning':
-            // Update progress bar
             translation_process.textContent = "[PROGRESS]: Cleaning text from images."
             break;
         case 'translate':
-            // Translation finished successfully
             translation_process.textContent = "[PROGRESS]: Translating text via OpenAI."
             break;
         case 'processing':
-            // Translation finished successfully
             translation_process.textContent = "[PROGRESS]: Adding text back to all images."
             break;
         case 'complete':
-            // Translation finished successfully
             translation_process.textContent = "[PROGRESS]: Translation done. Ready to download."
             break;
     }

@@ -2,6 +2,8 @@ function handleUploads(directory)
 {
     const instruc = document.getElementById('instructions');
     const imageContainer = document.getElementById('image-container');
+    const downloadButton = document.getElementById('download-button');
+    const deleteButton = document.getElementById('delete-button');
     const formData = new FormData();
 
     console.log(directory.length);
@@ -36,7 +38,10 @@ function handleUploads(directory)
                 `;
 
                 imageContainer.appendChild(imgDiv);
+
             });
+            deleteButton.classList.remove('hidden')
+            downloadButton.classList.remove('hidden')
         })
         .catch(error=> {
             console.error("Error uploading files:", error),
@@ -66,8 +71,13 @@ function removeImage(fileUrl, button)
 
         const imageContainer = document.getElementById('image-container');
         const instruc = document.getElementById('instructions');
+        const downloadButton = document.getElementById('download-button');
+        const deleteButton = document.getElementById('delete-button');
+
         if (imageContainer.children.length < 1) {
             imageContainer.classList.add('hidden');
+            downloadButton.classList.add('hidden')
+            deleteButton.classList.add('hidden')
             instruc.style.display = '';
 
             location.reload();
@@ -89,4 +99,59 @@ function showError(msg, duration = 3000) {
     setTimeout(() => {
         errorToast.textContent = "";
     }, duration);
+}
+
+function downloadImages() {
+    fetch('/download', {
+        method: 'GET'
+    })
+    .then(response => response.blob()) 
+    .then(blob => {
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');        
+        a.href = url;                                  
+        a.download = 'images.zip';                     
+        document.body.appendChild(a);                 
+        a.click();                                    
+        document.body.removeChild(a);                 
+        window.URL.revokeObjectURL(url);
+    })
+    .catch(error=> {
+        console.error('Download failed:', error),
+        showError(`ERROR | Error downloading files: ${error.message || error}`)
+    });
+}
+
+function deleteAllImages() {
+    fetch('/deleteImages', {
+        method: 'POST'
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+
+            const imageContainer = document.getElementById('image-container');
+            const elements = imageContainer.querySelectorAll('*');
+
+            elements.forEach(element => {
+                element.remove()
+            });
+
+            const instruc = document.getElementById('instructions');
+            const downloadButton = document.getElementById('download-button');
+            const deleteButton = document.getElementById('delete-button');
+
+            imageContainer.classList.add('hidden')
+            downloadButton.classList.add('hidden')
+            deleteButton.classList.add('hidden')
+            instruc.style.display = '';
+
+            location.reload();
+
+        }
+    })
+    .catch(error=> {
+        console.error('Issue deleting files: ', error),
+        showError(`ERROR | Issue deleting files: ${error.message || error}`)
+    });
 }

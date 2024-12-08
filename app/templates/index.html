@@ -16,6 +16,9 @@
                 <div class="md:w-2/3 pt-40">
                     <label class="block text-white font-bold pl-4 text-lg" for="chatGPT-key">
                         OpenAI API Key:
+                        <span title="Provide an API key from OpenAI. You can get one from openai.com">
+                            🛈
+                        </span>
                     </label>
                 </div>
                 <div class="md:w-full pt-4 pl-4 pr-4">
@@ -25,10 +28,20 @@
                 <div class="md:w-2/3 pt-10">
                     <label class="block text-white font-bold pl-4 text-lg" for="textsize">
                         Font Size:
+                        <span title="Provide a font size, if left empty text will scale inside the text boxes.">
+                            🛈
+                        </span>
                     </label>
                 </div>
                 <div class="md:w-full pt-4 pl-4 pr-4">
                     <input class="bg-gray-200 appearance-none border-2 border-gray-200 rounded w-full py-2 px-4 text-gray-700 leading-tight focus:outline-none focus:bg-white focus:border-purple-500" id="textsize" type="number">
+                </div>
+
+                <div class="md:w-2/3 pt-10">
+                    <label class="block text-white font-bold pl-4 text-lg">
+                        <input type="checkbox" id="empty-textboxes" class="mr-2">
+                        Empty Textboxes
+                    </label>
                 </div>
 
                 <div class="md:w-full pt-10 bg-center mx-auto">
@@ -72,6 +85,14 @@
                             <input id="dropzone-file" type="file" class="hidden" multiple webkitdirectory onchange="handleUploads(this.files)"/>
                         </label>
                     </div> 
+                </div>
+                <div class="flex justify-between items-center p-4">
+                    <button class="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded hidden" id="delete-button" onclick="deleteAllImages()">
+                        Delete All
+                    </button>
+                    <button class="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded hidden" id="download-button" onclick="downloadImages()">
+                        Download
+                    </button>
                 </div>
                 <div class="flex flex-col space-y-2 p-6 hidden" id="image-container">
                     <div class="relative">

@@ -82,7 +82,6 @@ class RemoveText:
                 inpainted_image = cv2.inpaint(image_, mask, inpaintRadius=3, flags=cv2.INPAINT_TELEA)
                 image_ = inpainted_image
 
-            print(page)
             image = Image.fromarray(cv2.cvtColor(inpainted_image, cv2.COLOR_BGR2RGB))
             image.save(page)
 
@@ -92,11 +91,9 @@ class TranslateText:
         self.gpt_key = gpt_key
     def TranslateText(self):
         client = OpenAI(api_key=self.gpt_key)
-        prompt = "You are a manga translator. Follow a style that is expressive and interesting, and try to make the translations sound good even if you have to localize it to english. If the given Japanese text is a single character/expression, translate it as an expression. If it is punctuation, do not translate and just send the text back. IMPORTANT: Try and condense where possible to have a shorter response, but still have full meaning. Always try your best, ONLY return a translated phrase, if one cannot be found, try your best."
         for page in self.text_map.keys():
             for i, box in enumerate(self.text_map[page]):
                 text = box['text']
-                print(text)
                 try:
                     response = client.chat.completions.create(
                         model = "gpt-4o-mini",
@@ -104,13 +101,11 @@ class TranslateText:
                             {"role": "system","content":"You are a manga translator. Follow a style that is expressive and interesting, and try to make the translations sound good even if you have to localize it to english. If the given Japanese text is a single character/expression, translate it as an expression. If it is punctuation, do not translate and just send the text back. IMPORTANT: Try and condense where possible to have a shorter response, but still have full meaning. Always try your best, ONLY return a translated phrase, if one cannot be found, try your best."},
                             {"role": "user", "content":f"{text}"}]
                     )
-                    print(response.choices[0].message.content)
                     self.text_map[page][i]['text'] = response.choices[0].message.content
                 except Exception as e:
                     print(f"error: {e}")
                     return [{}, e]
         text_map = self.text_map
-        print(text_map)
         return [text_map, None]
 
 class ProcessOutput:
@@ -118,11 +113,8 @@ class ProcessOutput:
         self.text_map = text_map
         self.font_size = font_size
     def ProcessOutput(self):
-         print("Process output")
-         print(self.text_map)
          for page in self.text_map.keys():
             img = Image.open(page)
-            print("opened image")
             draw = ImageDraw.Draw(img)
             for box in self.text_map[page]:
                 x_min, y_min, x_max, y_max = box['text_box']
@@ -175,5 +167,4 @@ class ProcessOutput:
                 text_y = center_y - text_height // 2
                 draw.multiline_text((text_x, text_y), wrapped_text, font=font, fill="black")
             
-            print(page)
             img.save(page)

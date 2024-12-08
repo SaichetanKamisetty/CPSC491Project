@@ -1,15 +1,22 @@
-from flask import Flask, render_template, request, jsonify, url_for, session, Response, stream_with_context
+from flask import Flask, render_template, request, jsonify, url_for, Response, stream_with_context, send_file
 import os
 from werkzeug.utils import secure_filename
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'models'))
 import time
 import json
+import zipfile
+import pathlib
+import io
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("robloflow_api_key")
 
 from Controller import TranslateManga
 
 from roboflow import Roboflow
-rf = Roboflow(api_key="")
+rf = Roboflow(api_key=f"{api_key}")
 project = rf.workspace().project("segmetn")
 model = project.version(3).model
 from manga_ocr import MangaOcr 
@@ -40,7 +47,7 @@ def translation_progress():
             else:
                 data = f'data: {json.dumps(app.translation_status)}\n\n'
             yield data
-            time.sleep(1)  # Prevent overwhelming the client
+            time.sleep(1) 
             
     return Response(stream_with_context(generate()), 
                    mimetype='text/event-stream')
@@ -88,6 +95,10 @@ def translate_request():
     global is_translating
     if is_translating:
         return jsonify({'success': False, 'message': 'Translation already in progress'}), 400
+    
+    apikey = request.form.get("gptInput")
+    textsize = int(request.form.get("textSize"))
+    checkbox = True if request.form.get("checkbox") == "true" else False
 
     is_translating = True
     try: 
@@ -96,7 +107,7 @@ def translate_request():
             app.translation_status = {
                 "status": status,
             }
-        translator = TranslateManga(model=model, file_loc=UPLOAD_FOLDER, ocr=ocr, progress_callback=progress_callback)
+        translator = TranslateManga(model=model, file_loc=UPLOAD_FOLDER, ocr=ocr, progress_callback=progress_callback, api_key=apikey, remove_text_only=checkbox, text_size=textsize)
         res = translator.TranslateManga()
 
         if res[0] == 1:
@@ -115,6 +126,54 @@ def translate_request():
     finally:
         app.translation_status = {"status": "waiting"}
         is_translating = False
+
+
+@app.route('/download', methods=['GET'])
+def download_images():
+    try:
+
+        if not os.path.exists(UPLOAD_FOLDER):
+            return jsonify({'success': False, 'message': f"Image directory doesn't exist"}), 400
+        
+
+        images = [f for f in os.listdir(UPLOAD_FOLDER)]
+        if not images:
+            return jsonify({'success': False, 'message': f"No images in directory"}), 400
+
+
+        base_path = pathlib.Path(UPLOAD_FOLDER)
+        data = io.BytesIO()
+
+        with zipfile.ZipFile(data, mode='w') as z:
+            for f_name in base_path.iterdir():
+                z.write(f_name, arcname=f_name.name)
+        data.seek(0)
+        return send_file(
+            data, 
+            mimetype='application/zip',
+            as_attachment=True,
+            download_name="images.zip"
+        )
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+    
+@app.route('/deleteImages', methods=['POST'])
+def delete_images():
+    try:
+        if not os.path.exists(UPLOAD_FOLDER):
+            return jsonify({'success': False, 'message': f"Folder does not exist."}), 400
+        images = [f for f in os.listdir(UPLOAD_FOLDER)]
+
+        if not images:
+            return jsonify({'success': False, 'message': f"No images in the directory"}), 400
+
+        for image in images:
+            os.remove(os.path.join(UPLOAD_FOLDER, image))
+        
+        return jsonify({'success': True, 'message': f"Images successfully deleted"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 
 app.run(debug=True)
 
